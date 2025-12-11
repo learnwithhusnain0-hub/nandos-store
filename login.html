@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Nandos UK</title>
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .login-header .logo {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .login-header h1 {
+            margin: 0;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .login-body {
+            padding: 40px 30px;
+        }
+        
+        .login-footer {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .login-footer a {
+            color: #d32f2f;
+            text-decoration: none;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .back-to-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-to-home">
+        <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+    
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">🍗</div>
+            <h1>Nandos UK</h1>
+            <p>Login to your account</p>
+        </div>
+        
+        <div class="login-body">
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginEmail"><i class="fas fa-envelope"></i> Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPhone"><i class="fas fa-phone"></i> Phone Number</label>
+                    <div class="phone-input">
+                        <select id="loginCountryCode">
+                            <option value="+44">UK (+44)</option>
+                            <option value="+1">US (+1)</option>
+                            <option value="+92">PK (+92)</option>
+                        </select>
+                        <input type="tel" id="loginPhone" placeholder="7123 456789" required>
+                    </div>
+                </div>
+                
+                <button type="button" id="loginSendCodeBtn" class="btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send Verification Code
+                </button>
+                
+                <div class="verification-code" style="display: none;">
+                    <div class="form-group">
+                        <label for="loginCode"><i class="fas fa-sms"></i> Enter 4-digit Code</label>
+                        <input type="text" id="loginCode" maxlength="4" placeholder="****">
+                        <p class="hint">We've sent a code to your phone</p>
+                    </div>
+                    <button type="button" id="loginVerifyBtn" class="btn-success">
+                        <i class="fas fa-check"></i> Verify & Continue
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="login-footer">
+            <p>By logging in, you agree to our <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a></p>
+        </div>
+    </div>
+
+    <!-- SMS Notification -->
+    <div id="loginSmsNotification" class="sms-notification">
+        <div class="sms-header">
+            <i class="fas fa-sms"></i> SMS Message
+            <span class="sms-time">Now</span>
+        </div>
+        <div class="sms-body">
+            <p>Your Nandos verification code is: <strong id="loginSmsCode">1234</strong></p>
+            <p class="sms-sender">From: NANDOS-UK</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const users = JSON.parse(localStorage.getItem('nandos_users')) || [];
+            let verificationCode = null;
+            let tempUser = null;
+            
+            // Format phone number
+            document.getElementById('loginPhone').addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 0) {
+                    value = value.match(/.{1,4}/g).join(' ');
+                }
+                e.target.value = value;
+            });
+            
+            // Send code button
+            document.getElementById('loginSendCodeBtn').addEventListener('click', function() {
+                const email = document.getElementById('loginEmail').value;
+                const phone = document.getElementById('loginPhone').value;
+                const countryCode = document.getElementById('loginCountryCode').value;
+                
+                if (!email || !phone) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+                
+                // Generate code
+                verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+                
+                // Show SMS notification
+                const smsDiv = document.getElementById('loginSmsNotification');
+                document.getElementById('loginSmsCode').textContent = verificationCode;
+                
+                smsDiv.style.display = 'block';
+                setTimeout(() => {
+                    smsDiv.style.display = 'none';
+                }, 30000);
+                
+                smsDiv.addEventListener('click', () => {
+                    smsDiv.style.display = 'none';
+                });
+                
+                // Show verification code input
+                document.querySelector('.verification-code').style.display = 'block';
+                document.getElementById('loginSendCodeBtn').style.display = 'none';
+                
+                // Store temp user
+                tempUser = { email, phone: countryCode + phone.replace(/\s/g, '') };
+            });
+            
+            // Verify button
+            document.getElementById('loginVerifyBtn').addEventListener('click', function() {
+                const enteredCode = document.getElementById('loginCode').value;
+                
+                if (enteredCode === verificationCode) {
+                    // Login user
+                    let user = users.find(u => u.email === tempUser.email);
+                    
+                    if (!user) {
+                        user = {
+                            id: Date.now().toString(),
+                            email: tempUser.email,
+                            phone: tempUser.phone,
+                            createdAt: new Date().toISOString(),
+                            orders: []
+                        };
+                        users.push(user);
+                        localStorage.setItem('nandos_users', JSON.stringify(users));
+                    }
+                    
+                    localStorage.setItem('nandos_current_user', JSON.stringify(user));
+                    
+                    // Redirect to main page
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Invalid verification code. Please try again.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

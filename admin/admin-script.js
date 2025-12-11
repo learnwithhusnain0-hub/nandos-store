@@ -219,4 +219,12 @@ function resetSystem() {
         }
     ];
     
-    localStorage.setItem('nandos_products
+    localStorage.setItem('nandos_products', JSON.stringify(defaultProducts));
+    
+    showMessage('System reset complete. Default data loaded.', 'success');
+    
+    // Reload admin dashboard
+    setTimeout(() => {
+        window.location.reload();
+    }, 2000);
+}

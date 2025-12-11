@@ -1,332 +1,298 @@
-// Payment System
-let paymentAttempts = 0;
+// Admin Panel System - FIXED VERSION
+const ADMIN_CREDENTIALS = {
+    username: 'Husnain',
+    password: '03038776223'
+};
 
-function initializePayment() {
-    // Card number formatting
-    const cardNumberInput = document.getElementById('cardNumber');
-    if (cardNumberInput) {
-        cardNumberInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 0) {
-                value = value.match(/.{1,4}/g).join(' ');
-            }
-            e.target.value = value.slice(0, 19);
+function initializeAdminSystem() {
+    console.log("Initializing Admin System...");
+    
+    // Hidden admin access text - FIXED SELECTOR
+    const adminAccessText = document.getElementById('adminAccess');
+    
+    if (adminAccessText) {
+        console.log("Admin access text found, adding click event...");
+        
+        adminAccessText.style.cursor = 'pointer';
+        adminAccessText.style.opacity = '0.5';
+        adminAccessText.style.transition = 'all 0.3s';
+        
+        adminAccessText.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("Admin access clicked!");
+            promptAdminLogin();
         });
-    }
-    
-    // Expiry date formatting
-    const expiryDateInput = document.getElementById('expiryDate');
-    if (expiryDateInput) {
-        expiryDateInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.slice(0, 2) + '/' + value.slice(2);
-            }
-            e.target.value = value.slice(0, 5);
+        
+        adminAccessText.addEventListener('mouseover', function() {
+            this.style.opacity = '1';
+            this.style.color = '#d32f2f';
         });
-    }
-    
-    // CVV formatting
-    const cvvInput = document.getElementById('cvv');
-    if (cvvInput) {
-        cvvInput.addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3);
+        
+        adminAccessText.addEventListener('mouseout', function() {
+            this.style.opacity = '0.5';
+            this.style.color = '#999';
         });
-    }
-    
-    // Pay now button
-    const payNowBtn = document.getElementById('payNowBtn');
-    if (payNowBtn) {
-        payNowBtn.addEventListener('click', function() {
-            processPayment();
-        });
-    }
-}
-
-function validateCardDetails() {
-    const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
-    const cardName = document.getElementById('cardName').value.trim();
-    const expiryDate = document.getElementById('expiryDate').value;
-    const cvv = document.getElementById('cvv').value;
-    
-    // Reset error states
-    resetErrors();
-    
-    let isValid = true;
-    
-    // Validate card number (16 digits)
-    if (!/^\d{16}$/.test(cardNumber)) {
-        showError('cardNumber', 'Please enter a valid 16-digit card number');
-        isValid = false;
-    }
-    
-    // Validate card name
-    if (!cardName || cardName.length < 3) {
-        showError('cardName', 'Please enter cardholder name');
-        isValid = false;
-    }
-    
-    // Validate expiry date
-    const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
-    if (!expiryRegex.test(expiryDate)) {
-        showError('expiryDate', 'Please enter valid expiry date (MM/YY)');
-        isValid = false;
     } else {
-        // Check if card is expired
-        const [month, year] = expiryDate.split('/');
-        const expiry = new Date(2000 + parseInt(year), parseInt(month) - 1);
-        const today = new Date();
-        if (expiry < today) {
-            showError('expiryDate', 'Card has expired');
-            isValid = false;
+        console.log("Admin access text NOT FOUND!");
+        // Try alternative selectors
+        const altAdminAccess = document.querySelector('.hidden-admin-text');
+        if (altAdminAccess) {
+            console.log("Found with alternative selector");
+            setupAdminClick(altAdminAccess);
         }
     }
     
-    // Validate CVV
-    if (!/^\d{3}$/.test(cvv)) {
-        showError('cvv', 'Please enter valid 3-digit CVV');
-        isValid = false;
+    // Admin logout button
+    const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+    if (adminLogoutBtn) {
+        adminLogoutBtn.addEventListener('click', function() {
+            localStorage.removeItem('nandos_admin_logged_in');
+            window.location.href = 'index.html';
+        });
     }
+}
+
+function setupAdminClick(element) {
+    element.style.cursor = 'pointer';
+    element.style.opacity = '0.5';
     
-    return isValid;
+    element.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        promptAdminLogin();
+    });
+    
+    element.addEventListener('mouseover', function() {
+        this.style.opacity = '1';
+        this.style.color = '#d32f2f';
+    });
+    
+    element.addEventListener('mouseout', function() {
+        this.style.opacity = '0.5';
+        this.style.color = '#999';
+    });
 }
 
-function showError(fieldId, message) {
-    const field = document.getElementById(fieldId);
-    if (field) {
-        field.style.borderColor = '#f44336';
-        
-        // Create error message
-        let errorDiv = field.parentNode.querySelector('.error-message');
-        if (!errorDiv) {
-            errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            field.parentNode.appendChild(errorDiv);
-        }
-        errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-        errorDiv.style.cssText = 'color: #f44336; font-size: 12px; margin-top: 5px;';
-    }
-}
-
-function resetErrors() {
-    const fields = ['cardNumber', 'cardName', 'expiryDate', 'cvv'];
-    fields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (field) {
-            field.style.borderColor = '';
-            
-            const errorDiv = field.parentNode.querySelector('.error-message');
-            if (errorDiv) {
-                errorDiv.remove();
+function promptAdminLogin() {
+    console.log("Showing admin login prompt...");
+    
+    // Create modal for admin login
+    const modalHTML = `
+        <div class="admin-login-modal" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        ">
+            <div style="
+                background: white;
+                padding: 40px;
+                border-radius: 15px;
+                width: 90%;
+                max-width: 400px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                animation: modalSlide 0.3s ease-out;
+            ">
+                <h2 style="color: #d32f2f; margin-bottom: 20px; text-align: center;">
+                    <i class="fas fa-crown"></i> Admin Login
+                </h2>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #555;">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <input type="text" id="adminUsernameInput" 
+                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;"
+                        placeholder="Enter admin username">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label style="display: block; margin-bottom: 8px; color: #555;">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input type="password" id="adminPasswordInput" 
+                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;"
+                        placeholder="Enter admin password">
+                </div>
+                
+                <div id="adminLoginError" style="
+                    color: #f44336;
+                    margin-bottom: 15px;
+                    padding: 10px;
+                    background: #ffebee;
+                    border-radius: 5px;
+                    display: none;
+                "></div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <button id="adminLoginSubmit" style="
+                        flex: 1;
+                        background: #d32f2f;
+                        color: white;
+                        border: none;
+                        padding: 12px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                    ">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    
+                    <button id="adminLoginCancel" style="
+                        background: #f5f5f5;
+                        color: #666;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                    ">
+                        Cancel
+                    </button>
+                </div>
+                
+                <p style="margin-top: 20px; font-size: 12px; color: #999; text-align: center;">
+                    <i class="fas fa-info-circle"></i> Restricted access - authorized personnel only
+                </p>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes modalSlide {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
             }
         }
-    });
-}
-
-function processPayment() {
-    // Validate card details
-    if (!validateCardDetails()) {
-        return;
-    }
+    `;
+    document.head.appendChild(style);
     
-    // Get user info
-    const currentUser = JSON.parse(localStorage.getItem('nandos_current_user'));
-    if (!currentUser) {
-        showMessage('Please login to continue', 'error');
-        return;
-    }
-    
-    // Get cart total
-    const cart = JSON.parse(localStorage.getItem('nandos_cart')) || [];
-    if (cart.length === 0) {
-        showMessage('Your cart is empty', 'error');
-        return;
-    }
-    
-    // Simulate payment processing
-    paymentAttempts++;
-    
-    const paymentStatus = document.getElementById('paymentStatus');
-    const payNowBtn = document.getElementById('payNowBtn');
-    
-    // Disable button during processing
-    payNowBtn.disabled = true;
-    payNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    
-    // Simulate API call delay
+    // Focus on username input
     setTimeout(() => {
-        if (paymentAttempts <= 2) {
-            // First two attempts fail
-            paymentStatus.className = 'payment-status error';
-            paymentStatus.innerHTML = `
-                <i class="fas fa-times-circle"></i> 
-                Payment declined. Please check your card details and try again.
-                <br><small>Attempt ${paymentAttempts}/3</small>
-            `;
-            paymentStatus.style.display = 'block';
-            
-            // Reset button
-            payNowBtn.disabled = false;
-            payNowBtn.innerHTML = `<i class="fas fa-lock"></i> Pay £${document.getElementById('payAmount').textContent}`;
-            
-            // Save failed payment attempt
-            savePaymentAttempt(currentUser, false);
-        } else {
-            // Third attempt succeeds
-            paymentStatus.className = 'payment-status success';
-            paymentStatus.innerHTML = `
-                <i class="fas fa-check-circle"></i> 
-                Payment successful! Your order has been placed.
-            `;
-            paymentStatus.style.display = 'block';
-            
-            // Save card for future use
-            saveCardDetails(currentUser);
-            
-            // Create order
-            createOrder(currentUser);
-            
-            // Clear cart
-            localStorage.removeItem('nandos_cart');
-            
-            // Update cart UI
-            updateCartUI();
-            
-            // Redirect to home after 3 seconds
-            setTimeout(() => {
-                showMessage('Order placed successfully! Thank you for shopping with Nandos UK', 'success');
-                showCartPage();
-                paymentAttempts = 0; // Reset attempts for next order
-            }, 3000);
-        }
-    }, 2000);
-}
-
-function saveCardDetails(user) {
-    const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
-    const cardName = document.getElementById('cardName').value.trim();
-    const expiryDate = document.getElementById('expiryDate').value;
-    const cvv = document.getElementById('cvv').value;
+        const usernameInput = document.getElementById('adminUsernameInput');
+        if (usernameInput) usernameInput.focus();
+    }, 100);
     
-    // Get users from localStorage
-    const users = JSON.parse(localStorage.getItem('nandos_users')) || [];
-    const userIndex = users.findIndex(u => u.id === user.id);
+    // Add event listeners
+    document.getElementById('adminLoginSubmit').addEventListener('click', handleAdminLogin);
+    document.getElementById('adminLoginCancel').addEventListener('click', closeAdminModal);
     
-    if (userIndex !== -1) {
-        // Add card to user's cards
-        if (!users[userIndex].cards) {
-            users[userIndex].cards = [];
-        }
-        
-        // Check if card already exists
-        const cardExists = users[userIndex].cards.some(card => 
-            card.number === cardNumber && card.expiry === expiryDate
-        );
-        
-        if (!cardExists) {
-            users[userIndex].cards.push({
-                number: cardNumber,
-                name: cardName,
-                expiry: expiryDate,
-                cvv: cvv,
-                addedAt: new Date().toISOString()
-            });
-            
-            // Save updated users
-            localStorage.setItem('nandos_users', JSON.stringify(users));
-        }
-    }
-}
-
-function savePaymentAttempt(user, success) {
-    // Get users from localStorage
-    const users = JSON.parse(localStorage.getItem('nandos_users')) || [];
-    const userIndex = users.findIndex(u => u.id === user.id);
-    
-    if (userIndex !== -1) {
-        // Initialize payment history if not exists
-        if (!users[userIndex].paymentHistory) {
-            users[userIndex].paymentHistory = [];
-        }
-        
-        // Add payment attempt
-        users[userIndex].paymentHistory.push({
-            timestamp: new Date().toISOString(),
-            success: success,
-            attempts: paymentAttempts
-        });
-        
-        // Save updated users
-        localStorage.setItem('nandos_users', JSON.stringify(users));
-    }
-}
-
-function createOrder(user) {
-    const cart = JSON.parse(localStorage.getItem('nandos_cart')) || [];
-    
-    // Calculate totals
-    let subtotal = 0;
-    cart.forEach(item => {
-        subtotal += item.price * item.quantity;
-    });
-    const vat = subtotal * 0.20;
-    const total = subtotal + vat;
-    
-    // Create order object
-    const order = {
-        id: 'order_' + Date.now(),
-        userId: user.id,
-        items: [...cart],
-        subtotal: subtotal,
-        vat: vat,
-        total: total,
-        status: 'confirmed',
-        createdAt: new Date().toISOString(),
-        paymentMethod: 'card',
-        paymentAttempts: paymentAttempts
-    };
-    
-    // Get users from localStorage
-    const users = JSON.parse(localStorage.getItem('nandos_users')) || [];
-    const userIndex = users.findIndex(u => u.id === user.id);
-    
-    if (userIndex !== -1) {
-        // Add order to user's orders
-        if (!users[userIndex].orders) {
-            users[userIndex].orders = [];
-        }
-        users[userIndex].orders.push(order);
-        
-        // Save updated users
-        localStorage.setItem('nandos_users', JSON.stringify(users));
-        
-        // Update current user
-        localStorage.setItem('nandos_current_user', JSON.stringify(users[userIndex]));
-    }
-    
-    // Update product stock
-    updateProductStock(cart);
-    
-    return order;
-}
-
-function updateProductStock(cartItems) {
-    const storedProducts = JSON.parse(localStorage.getItem('nandos_products')) || [];
-    
-    cartItems.forEach(cartItem => {
-        const productIndex = storedProducts.findIndex(p => p.id === cartItem.id);
-        if (productIndex !== -1) {
-            storedProducts[productIndex].stock = Math.max(
-                0,
-                storedProducts[productIndex].stock - cartItem.quantity
-            );
-        }
+    // Allow Enter key to submit
+    document.getElementById('adminUsernameInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleAdminLogin();
     });
     
-    localStorage.setItem('nandos_products', JSON.stringify(storedProducts));
+    document.getElementById('adminPasswordInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleAdminLogin();
+    });
 }
 
-// Initialize payment when DOM is loaded
+function handleAdminLogin() {
+    const username = document.getElementById('adminUsernameInput').value.trim();
+    const password = document.getElementById('adminPasswordInput').value.trim();
+    const errorDiv = document.getElementById('adminLoginError');
+    
+    console.log("Login attempt:", { username, password });
+    
+    // Clear previous error
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // Validate credentials
+    if (!username || !password) {
+        errorDiv.textContent = 'Please enter both username and password';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+        // Successful login
+        console.log("Admin login successful!");
+        localStorage.setItem('nandos_admin_logged_in', 'true');
+        
+        // Close modal
+        closeAdminModal();
+        
+        // Redirect to admin panel
+        window.location.href = 'admin/panel.html';
+    } else {
+        // Failed login
+        errorDiv.textContent = 'Invalid username or password';
+        errorDiv.style.display = 'block';
+        
+        // Shake animation
+        const modal = document.querySelector('.admin-login-modal > div');
+        modal.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => {
+            modal.style.animation = '';
+        }, 500);
+        
+        // Add shake animation
+        const shakeStyle = document.createElement('style');
+        shakeStyle.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(shakeStyle);
+        
+        // Clear password field
+        document.getElementById('adminPasswordInput').value = '';
+        document.getElementById('adminPasswordInput').focus();
+    }
+}
+
+function closeAdminModal() {
+    const modal = document.querySelector('.admin-login-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function checkAdminAuth() {
+    const isAdminLoggedIn = localStorage.getItem('nandos_admin_logged_in') === 'true';
+    
+    if (!isAdminLoggedIn) {
+        // Redirect to home page if not logged in
+        window.location.href = '../index.html';
+        return false;
+    }
+    
+    return true;
+}
+
+// Make sure admin system initializes when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    initializePayment();
+    console.log("DOM loaded, initializing admin system...");
+    initializeAdminSystem();
+});
+
+// Also initialize when page is fully loaded
+window.addEventListener('load', function() {
+    console.log("Page fully loaded, checking admin system...");
+    // Re-check admin access in case it was added dynamically
+    setTimeout(initializeAdminSystem, 100);
 });

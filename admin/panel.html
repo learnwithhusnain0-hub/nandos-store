@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Nandos UK</title>
+    <link rel="stylesheet" href="../styles/admin.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Admin Login Check -->
+    <div id="adminLoginCheck"></div>
+    
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="container">
+            <nav class="admin-nav">
+                <div class="admin-logo">
+                    <i class="fas fa-crown"></i> Nandos UK Admin
+                </div>
+                <div class="admin-nav-links">
+                    <a href="#dashboard" class="admin-nav-link active" data-section="dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="#products" class="admin-nav-link" data-section="products">
+                        <i class="fas fa-hamburger"></i> Products
+                    </a>
+                    <a href="#users" class="admin-nav-link" data-section="users">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                    <a href="#orders" class="admin-nav-link" data-section="orders">
+                        <i class="fas fa-shopping-bag"></i> Orders
+                    </a>
+                </div>
+                <button class="admin-logout" id="adminLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Admin Container -->
+    <div class="admin-container">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="admin-section">
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-hamburger"></i>
+                    <div class="stat-number" id="totalProducts">0</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-shopping-bag"></i>
+                    <div class="stat-number" id="totalOrders">0</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-pound-sign"></i>
+                    <div class="stat-number">£<span id="totalSales">0</span></div>
+                    <div class="stat-label">Total Sales</div>
+                </div>
+            </div>
+            
+            <h3>Recent Activity</h3>
+            <div id="recentActivity">
+                <!-- Recent activity will be loaded here -->
+            </div>
+        </section>
+        
+        <!-- Products Section -->
+        <section id="products" class="admin-section" style="display: none;">
+            <h2><i class="fas fa-hamburger"></i> Product Management</h2>
+            
+            <div class="admin-search">
+                <input type="text" id="productSearch" placeholder="Search products...">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <button class="btn-save" onclick="addNewProduct()">
+                    <i class="fas fa-plus"></i> Add New Product
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="admin-table" id="productsTable">
+                    <!-- Products will be loaded here -->
+                </table>
+            </div>
+        </section>
+        
+        <!-- Users Section -->
+        <section id="users" class="admin-section" style="display: none;">
+            <h2><i class="fas fa-users"></i> User Management</h2>
+            
+            <div class="admin-search">
+                <input type="text" id="userSearch" placeholder="Search users...">
+            </div>
+            
+            <div class="table-responsive">
+                <table class="admin-table" id="usersTable">
+                    <!-- Users will be loaded here -->
+                </table>
+            </div>
+        </section>
+        
+        <!-- Orders Section -->
+        <section id="orders" class="admin-section" style="display: none;">
+            <h2><i class="fas fa-shopping-bag"></i> Order Management</h2>
+            
+            <div class="admin-search">
+                <input type="text" id="orderSearch" placeholder="Search orders...">
+            </div>
+            
+            <div class="table-responsive">
+                <table class="admin-table" id="ordersTable">
+                    <!-- Orders will be loaded here -->
+                </table>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="../scripts/admin.js"></script>
+    <script>
+        // Admin Panel Navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check admin authentication
+            const isAdminLoggedIn = localStorage.getItem('nandos_admin_logged_in') === 'true';
+            if (!isAdminLoggedIn) {
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // Load dashboard data
+            loadAdminDashboard();
+            
+            // Navigation handling
+            const navLinks = document.querySelectorAll('.admin-nav-link');
+            const sections = document.querySelectorAll('.admin-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Update active nav link
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show selected section
+                    const sectionId = this.getAttribute('data-section');
+                    sections.forEach(section => {
+                        section.style.display = 'none';
+                    });
+                    
+                    document.getElementById(sectionId).style.display = 'block';
+                    
+                    // Load section data if needed
+                    switch(sectionId) {
+                        case 'products':
+                            loadAdminProducts();
+                            break;
+                        case 'users':
+                            loadAdminUsers();
+                            break;
+                        case 'orders':
+                            loadAdminOrders();
+                            break;
+                    }
+                });
+            });
+            
+            // Search functionality
+            const productSearch = document.getElementById('productSearch');
+            if (productSearch) {
+                productSearch.addEventListener('input', function() {
+                    filterTable('productsTable', this.value.toLowerCase());
+                });
+            }
+            
+            const userSearch = document.getElementById('userSearch');
+            if (userSearch) {
+                userSearch.addEventListener('input', function() {
+                    filterTable('usersTable', this.value.toLowerCase());
+                });
+            }
+            
+            const orderSearch = document.getElementById('orderSearch');
+            if (orderSearch) {
+                orderSearch.addEventListener('input', function() {
+                    filterTable('ordersTable', this.value.toLowerCase());
+                });
+            }
+        });
+        
+        function filterTable(tableId, searchText) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) { // Skip header row
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let rowText = '';
+                
+                for (let j = 0; j < cells.length; j++) {
+                    rowText += cells[j].textContent.toLowerCase() + ' ';
+                }
+                
+                if (rowText.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+        
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 8px;
+                z-index: 9999;
+                animation: slideIn 0.3s ease-out;
+                background: ${type === 'success' ? '#4caf50' : '#f44336'};
+                color: white;
+                font-weight: 500;
+            `;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            .table-responsive {
+                overflow-x: auto;
+            }
+            .status-badge {
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            .status-badge.confirmed {
+                background: #d4edda;
+                color: #155724;
+            }
+            .status-badge.pending {
+                background: #fff3cd;
+                color: #856404;
+            }
+            .status-badge.cancelled {
+                background: #f8d7da;
+                color: #721c24;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

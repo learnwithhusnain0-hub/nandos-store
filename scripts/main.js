@@ -284,7 +284,79 @@ function showMessage(message, type) {
         document.head.appendChild(style);
     }
 }
+// Main JavaScript میں admin access fix شامل کریں
+function initializeAdminAccess() {
+    console.log("Setting up admin access...");
+    
+    const adminAccess = document.getElementById('adminAccess');
+    
+    if (adminAccess) {
+        // Make sure it's clickable
+        adminAccess.style.cursor = 'pointer';
+        adminAccess.style.userSelect = 'none';
+        
+        // Remove any existing event listeners
+        const newAdminAccess = adminAccess.cloneNode(true);
+        adminAccess.parentNode.replaceChild(newAdminAccess, adminAccess);
+        
+        // Add click event
+        newAdminAccess.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("Admin access clicked from main.js");
+            promptAdminLogin();
+        });
+        
+        // Add hover effects
+        newAdminAccess.addEventListener('mouseover', function() {
+            this.style.opacity = '1';
+            this.style.color = '#d32f2f';
+        });
+        
+        newAdminAccess.addEventListener('mouseout', function() {
+            this.style.opacity = '0.3';
+            this.style.color = '#999';
+        });
+        
+        console.log("Admin access setup complete");
+    } else {
+        console.log("Admin access element not found!");
+        // Try to find it after a delay
+        setTimeout(() => {
+            const foundAdmin = document.getElementById('adminAccess');
+            if (foundAdmin) {
+                initializeAdminAccess(); // Retry
+            }
+        }, 1000);
+    }
+}
 
+// DOM loaded پر initialize کریں
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAdminAccess();
+    
+    // Alternative: Direct onclick attribute (simplest solution)
+    const adminAccess = document.getElementById('adminAccess');
+    if (adminAccess) {
+        adminAccess.setAttribute('onclick', 'showAdminLogin()');
+    }
+});
+
+// Simple admin login function
+function showAdminLogin() {
+    const username = prompt("Enter Admin Username:");
+    if (!username) return;
+    
+    const password = prompt("Enter Admin Password:");
+    if (!password) return;
+    
+    if (username === "Husnain" && password === "03038776223") {
+        localStorage.setItem('nandos_admin_logged_in', 'true');
+        window.location.href = 'admin/panel.html';
+    } else {
+        alert("Invalid admin credentials");
+    }
+}
 // Export functions to global scope for HTML onclick attributes
 window.addToCart = addToCart;
 window.updateQuantity = updateQuantity;

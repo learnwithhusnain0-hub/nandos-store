@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nandos UK - Authentic Fast Food</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="logo-placeholder">🍗 NANDOS</div>
+                <h2>Welcome to Nandos UK</h2>
+                <p>Login to order delicious fast food</p>
+            </div>
+            
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
+                    <div class="phone-input">
+                        <select id="countryCode">
+                            <option value="+44">UK (+44)</option>
+                            <option value="+1">US (+1)</option>
+                            <option value="+92">PK (+92)</option>
+                        </select>
+                        <input type="tel" id="phone" placeholder="7123 456789" required>
+                    </div>
+                </div>
+                
+                <button id="sendCodeBtn" class="btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send Verification Code
+                </button>
+                
+                <div class="verification-code" style="display: none;">
+                    <div class="form-group">
+                        <label for="code"><i class="fas fa-sms"></i> Enter 4-digit Code</label>
+                        <input type="text" id="code" maxlength="4" placeholder="****">
+                        <p class="hint">Check your phone for SMS notification</p>
+                    </div>
+                    <button id="verifyBtn" class="btn-success">
+                        <i class="fas fa-check"></i> Verify & Login
+                    </button>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <p>By logging in, you agree to our <a href="#">Terms & Conditions</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SMS Notification -->
+    <div id="smsNotification" class="sms-notification">
+        <div class="sms-header">
+            <i class="fas fa-sms"></i> SMS Message
+            <span class="sms-time">Now</span>
+        </div>
+        <div class="sms-body">
+            <p>Your Nandos verification code is: <strong id="smsCode">1234</strong></p>
+            <p class="sms-sender">From: NANDOS-UK</p>
+        </div>
+    </div>
+
+    <!-- Main Content (Hidden until login) -->
+    <div id="mainContent" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <div class="main-logo">🍗 NANDOS</div>
+                        <div class="brand-info">
+                            <h1>Nandos UK</h1>
+                            <p class="tagline">Authentic Fast Food • Since 1987</p>
+                        </div>
+                    </div>
+                    
+                    <div class="header-actions">
+                        <div class="user-info">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="userEmail">user@example.com</span>
+                        </div>
+                        <div class="cart-icon" id="cartIcon">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">0</span>
+                        </div>
+                        <button class="btn-logout" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+                
+                <nav class="main-nav">
+                    <a href="#" class="nav-link active" data-page="home">Home</a>
+                    <a href="#" class="nav-link" data-page="menu">Menu</a>
+                    <a href="#" class="nav-link" data-page="deals">Deals</a>
+                    <a href="#" class="nav-link" data-page="contact">Contact</a>
+                    <!-- Hidden Admin Access -->
+                    <span class="hidden-admin-text" id="adminAccess">
+                        <i class="fas fa-lock"></i> Admin Access
+                    </span>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <section class="hero">
+                    <div class="hero-content">
+                        <h2>🔥 HOT DEALS! UP TO 50% OFF</h2>
+                        <p>Authentic UK Fast Food Delivered to Your Doorstep</p>
+                        <div class="hero-features">
+                            <span><i class="fas fa-bolt"></i> Fast Delivery</span>
+                            <span><i class="fas fa-pound-sign"></i> Best Prices</span>
+                            <span><i class="fas fa-star"></i> Premium Quality</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="products-section">
+                    <h2 class="section-title">Our Featured Products</h2>
+                    <div class="products-grid" id="productsGrid">
+                        <!-- Products loaded by JavaScript -->
+                    </div>
+                </section>
+
+                <section class="info-section">
+                    <h2 class="section-title">Nandos UK - Fast Food Excellence</h2>
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h3>Main Branch</h3>
+                            <p>123 Oxford Street, London W1D 2HG, UK</p>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-store"></i>
+                            <h3>Mini Branches</h3>
+                            <p>All over UK - Manchester, Birmingham, Liverpool, Leeds</p>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-phone"></i>
+                            <h3>Contact</h3>
+                            <p>+44 20 7123 4567</p>
+                            <p>contact@nandos-uk.co.uk</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Cart Sidebar -->
+        <div class="cart-sidebar" id="cartSidebar">
+            <div class="cart-header">
+                <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
+                <button class="close-cart" id="closeCart">&times;</button>
+            </div>
+            <div class="cart-items" id="cartItems">
+                <p class="empty-cart">Your cart is empty</p>
+            </div>
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>£<span id="subtotal">0.00</span></span>
+                </div>
+                <div class="summary-row">
+                    <span>VAT (20%)</span>
+                    <span>£<span id="vat">0.00</span></span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span>£<span id="total">0.00</span></span>
+                </div>
+                <button class="btn-checkout" id="checkoutBtn">
+                    Proceed to Checkout <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Checkout Page -->
+        <div class="checkout-page" id="checkoutPage" style="display: none;">
+            <div class="container">
+                <button class="btn-back" id="backToCart">
+                    <i class="fas fa-arrow-left"></i> Back to Cart
+                </button>
+                
+                <h2 class="section-title">Complete Your Order</h2>
+                
+                <div class="checkout-content">
+                    <div class="checkout-form">
+                        <h3><i class="fas fa-credit-card"></i> Payment Details</h3>
+                        
+                        <div class="form-group">
+                            <label>Card Number</label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                            <div class="card-icons">
+                                <i class="fab fa-cc-visa"></i>
+                                <i class="fab fa-cc-mastercard"></i>
+                                <i class="fab fa-cc-amex"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Cardholder Name</label>
+                                <input type="text" id="cardName" placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label>Expiry Date</label>
+                                <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>CVV</label>
+                                <input type="password" id="cvv" placeholder="123" maxlength="3">
+                                <i class="fas fa-question-circle" title="3-digit code on back of card"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-status" id="paymentStatus"></div>
+                        
+                        <button class="btn-pay" id="payNowBtn">
+                            <i class="fas fa-lock"></i> Pay £<span id="payAmount">0.00</span>
+                        </button>
+                        
+                        <p class="secure-notice">
+                            <i class="fas fa-shield-alt"></i> Secure payment processed by Nandos UK
+                        </p>
+                    </div>
+                    
+                    <div class="order-summary">
+                        <h3><i class="fas fa-receipt"></i> Order Summary</h3>
+                        <div id="checkoutSummary"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <div class="footer-logo">🍗 NANDOS UK</div>
+                        <p>Authentic UK Fast Food since 1987</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Contact Us</h4>
+                        <p><i class="fas fa-phone"></i> +44 20 7123 4567</p>
+                        <p><i class="fas fa-envelope"></i> contact@nandos-uk.co.uk</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Hours</h4>
+                        <p>Mon-Sun: 10:00 AM - 11:00 PM</p>
+                        <p>Delivery: 30-45 mins</p>
+                    </div>
+                </div>
+                <p class="copyright">© 2024 Nandos UK. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/products.js"></script>
+    <script src="scripts/cart.js"></script>
+    <script src="scripts/payment.js"></script>
+    <script src="scripts/admin.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>
